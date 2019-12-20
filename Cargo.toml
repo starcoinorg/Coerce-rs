@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "coerce-rt",
+    "coerce-derive",
     "coerce-remote",
 #    "coerce-remote/providers/coerce-mysql",
     "coerce-remote/providers/coerce-redis",

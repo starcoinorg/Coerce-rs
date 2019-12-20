@@ -82,6 +82,9 @@ pub async fn actor_loop<A: Actor>(
 
     ctx.set_status(Stopping);
 
+    // drop rx early to prevent cyclic call
+    drop(rx);
+
     actor.stopped(&mut ctx).await;
 
     ctx.set_status(Stopped);
