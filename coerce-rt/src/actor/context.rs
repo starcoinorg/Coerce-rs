@@ -1,4 +1,4 @@
-use crate::actor::scheduler::{ActorScheduler, GetActor, RegisterActor};
+use crate::actor::scheduler::{ActorScheduler, GetActor, RegisterActor, RemoveActor};
 use crate::actor::{Actor, ActorId, ActorRef, ActorRefError};
 
 lazy_static! {
@@ -39,6 +39,15 @@ impl ActorContext {
         A: 'static + Sync + Send,
     {
         match self.scheduler.send(GetActor::new(id)).await {
+            Ok(a) => a,
+            Err(_) => None,
+        }
+    }
+    pub async fn remove_actor<A: Actor>(&mut self, id: ActorId) -> Option<ActorRef<A>>
+    where
+        A: 'static + Sync + Send,
+    {
+        match self.scheduler.send(RemoveActor::new(id)).await {
             Ok(a) => a,
             Err(_) => None,
         }

@@ -33,6 +33,13 @@ where
     ActorContext::current_context().get_actor(id).await
 }
 
+async fn remove_actor<A: Actor>(id: ActorId) -> Option<ActorRef<A>>
+where
+    A: 'static + Sync + Send,
+{
+    ActorContext::current_context().remove_actor(id).await
+}
+
 #[derive(Clone)]
 pub struct BoxedActorRef {
     id: Uuid,
@@ -164,6 +171,8 @@ where
     }
 
     pub async fn stop(&mut self) -> Result<ActorStatus, ActorRefError> {
-        self.send(Stop {}).await
+        let r = self.send(Stop {}).await;
+        remove_actor::<A>(self.id.clone()).await;
+        r
     }
 }

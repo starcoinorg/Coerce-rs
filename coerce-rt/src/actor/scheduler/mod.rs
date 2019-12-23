@@ -64,6 +64,33 @@ where
     }
 }
 
+pub struct RemoveActor<A: Actor>
+where
+    A: 'static + Sync + Send,
+{
+    id: ActorId,
+    _a: PhantomData<A>,
+}
+
+impl<A: Actor> Message for RemoveActor<A>
+where
+    A: 'static + Sync + Send,
+{
+    type Result = Option<ActorRef<A>>;
+}
+
+impl<A: Actor> RemoveActor<A>
+where
+    A: 'static + Sync + Send,
+{
+    pub fn new(id: ActorId) -> RemoveActor<A> {
+        RemoveActor {
+            id,
+            _a: PhantomData,
+        }
+    }
+}
+
 #[async_trait]
 impl<A: Actor> Handler<RegisterActor<A>> for ActorScheduler
 where
@@ -96,6 +123,23 @@ where
     ) -> Option<ActorRef<A>> {
         match self.actors.get(&message.id) {
             Some(actor) => Some(ActorRef::<A>::from(actor.clone())),
+            None => None,
+        }
+    }
+}
+
+#[async_trait]
+impl<A: Actor> Handler<RemoveActor<A>> for ActorScheduler
+where
+    A: 'static + Sync + Send,
+{
+    async fn handle(
+        &mut self,
+        message: RemoveActor<A>,
+        _ctx: &mut ActorHandlerContext,
+    ) -> Option<ActorRef<A>> {
+        match self.actors.remove(&message.id) {
+            Some(actor) => Some(ActorRef::<A>::from(actor)),
             None => None,
         }
     }
