@@ -24,7 +24,15 @@ impl ActorScheduler {
 }
 
 #[async_trait]
-impl Actor for ActorScheduler {}
+impl Actor for ActorScheduler {
+    async fn started(&mut self, ctx: &mut ActorHandlerContext) {
+        info!("actor scheduler({}) started", ctx.actor_id());
+    }
+
+    async fn stopped(&mut self, ctx: &mut ActorHandlerContext) {
+        info!("actor scheduler({}) stopped", ctx.actor_id());
+    }
+}
 
 pub struct RegisterActor<A: Actor>(pub A, pub tokio::sync::oneshot::Sender<bool>)
 where
