@@ -18,7 +18,7 @@ impl ActorContext {
     }
 
     pub(crate) fn from(scheduler: ActorRef<ActorScheduler>) -> Self {
-        ActorContext {scheduler}
+        ActorContext { scheduler }
     }
 
     pub fn current_context() -> ActorContext {
@@ -77,12 +77,20 @@ pub struct ActorHandlerContext {
 }
 
 impl ActorHandlerContext {
-    pub fn new(actor_id: ActorId, context: ActorContext, status: ActorStatus) -> ActorHandlerContext {
-        ActorHandlerContext { actor_id, status, context }
+    pub fn new(
+        actor_id: ActorId,
+        context: ActorContext,
+        status: ActorStatus,
+    ) -> ActorHandlerContext {
+        ActorHandlerContext {
+            actor_id,
+            status,
+            context,
+        }
     }
 
-    pub fn actor_context(&self) -> &ActorContext {
-        &self.context
+    pub fn actor_context_mut(&mut self) -> &mut ActorContext {
+        &mut self.context
     }
 
     pub fn actor_id(&self) -> &ActorId {
