@@ -1,5 +1,5 @@
 use crate::actor::context::ActorStatus::{Started, Starting, Stopped, Stopping};
-use crate::actor::context::{ActorHandlerContext, ActorStatus};
+use crate::actor::context::{ActorHandlerContext, ActorStatus, ActorContext};
 use crate::actor::message::{Handler, Message, MessageHandler};
 use crate::actor::{Actor, ActorId};
 
@@ -39,6 +39,7 @@ where
 
 pub async fn actor_loop<A: Actor>(
     id: ActorId,
+    context: ActorContext,
     mut actor: A,
     mut rx: tokio::sync::mpsc::Receiver<MessageHandler<A>>,
     on_start: Option<tokio::sync::oneshot::Sender<bool>>,
@@ -46,7 +47,7 @@ pub async fn actor_loop<A: Actor>(
     A: 'static + Send + Sync,
 {
     trace!(target: "ActorLoop", "[{}] starting", &id);
-    let mut ctx = ActorHandlerContext::new(id.clone(), Starting);
+    let mut ctx = ActorHandlerContext::new(id.clone(),context,  Starting);
 
     actor.started(&mut ctx).await;
 

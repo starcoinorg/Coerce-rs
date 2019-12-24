@@ -17,6 +17,10 @@ impl ActorContext {
         }
     }
 
+    pub(crate) fn from(scheduler: ActorRef<ActorScheduler>) -> Self {
+        ActorContext {scheduler}
+    }
+
     pub fn current_context() -> ActorContext {
         CURRENT_CONTEXT.clone()
     }
@@ -26,7 +30,11 @@ impl ActorContext {
         A: 'static + Sync + Send,
     {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let actor_ref = self.scheduler.send(RegisterActor(actor, tx)).await;
+        let actor_context = self.clone();
+        let actor_ref = self
+            .scheduler
+            .send(RegisterActor(actor_context, actor, tx))
+            .await;
 
         match rx.await {
             Ok(true) => actor_ref,
@@ -65,11 +73,16 @@ pub enum ActorStatus {
 pub struct ActorHandlerContext {
     actor_id: ActorId,
     status: ActorStatus,
+    context: ActorContext,
 }
 
 impl ActorHandlerContext {
-    pub fn new(actor_id: ActorId, status: ActorStatus) -> ActorHandlerContext {
-        ActorHandlerContext { actor_id, status }
+    pub fn new(actor_id: ActorId, context: ActorContext, status: ActorStatus) -> ActorHandlerContext {
+        ActorHandlerContext { actor_id, status, context }
+    }
+
+    pub fn actor_context(&self) -> &ActorContext {
+        &self.context
     }
 
     pub fn actor_id(&self) -> &ActorId {

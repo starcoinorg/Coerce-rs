@@ -1,8 +1,7 @@
-use crate::actor::context::ActorHandlerContext;
+use crate::actor::context::{ActorContext, ActorHandlerContext};
 use crate::actor::lifecycle::actor_loop;
-use crate::actor::message::{Handler, Message};
+use crate::actor::message::{Handler, Message, MessageHandler};
 use crate::actor::{Actor, ActorId, ActorRef, BoxedActorRef};
-
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
@@ -14,12 +13,13 @@ pub struct ActorScheduler {
 
 impl ActorScheduler {
     pub fn new() -> ActorRef<ActorScheduler> {
-        start_actor(
-            ActorScheduler {
-                actors: HashMap::new(),
-            },
-            None,
-        )
+        let (actor_ref, rx) = gen_actor_ref::<ActorScheduler>();
+        let actor = ActorScheduler {
+            actors: HashMap::new(),
+        };
+        let context = ActorContext::from(actor_ref.clone());
+        tokio::spawn(actor_loop(actor_ref.id.clone(), context, actor, rx, None));
+        actor_ref
     }
 }
 
@@ -34,7 +34,11 @@ impl Actor for ActorScheduler {
     }
 }
 
-pub struct RegisterActor<A: Actor>(pub A, pub tokio::sync::oneshot::Sender<bool>)
+pub struct RegisterActor<A: Actor>(
+    pub ActorContext,
+    pub A,
+    pub tokio::sync::oneshot::Sender<bool>,
+)
 where
     A: 'static + Sync + Send;
 
@@ -109,7 +113,8 @@ where
         message: RegisterActor<A>,
         _ctx: &mut ActorHandlerContext,
     ) -> ActorRef<A> {
-        let actor = start_actor(message.0, Some(message.1));
+        let RegisterActor(context, actor, on_start) = message;
+        let actor = start_actor(context, actor, Some(on_start));
 
         let _ = self
             .actors
@@ -154,19 +159,27 @@ where
 }
 
 fn start_actor<A: Actor>(
+    actor_context: ActorContext,
     actor: A,
     on_start: Option<tokio::sync::oneshot::Sender<bool>>,
 ) -> ActorRef<A>
 where
     A: 'static + Send + Sync,
 {
+    let (actor_ref, rx) = gen_actor_ref();
+    tokio::spawn(actor_loop(actor_ref.id.clone(), actor_context, actor, rx, on_start));
+    actor_ref
+}
+
+fn gen_actor_ref<A: Actor>() -> (ActorRef<A>, tokio::sync::mpsc::Receiver<MessageHandler<A>>)
+    where
+    A: 'static + Send + Sync,
+{
     let id = ActorId::new_v4();
     let (tx, rx) = tokio::sync::mpsc::channel(128);
-
-    tokio::spawn(actor_loop(id.clone(), actor, rx, on_start));
-
-    ActorRef {
+    let actor_ref = ActorRef {
         id: id.clone(),
         sender: tx,
-    }
+    };
+    (actor_ref, rx)
 }
