@@ -123,13 +123,13 @@ where
         {
             Ok(_) => match rx.await {
                 Ok(res) => Ok(res),
-                Err(_e) => {
-                    error!(target: "ActorRef", "error receiving result");
+                Err(e) => {
+                    error!(target: "ActorRef", "error receiving result, {}", e);
                     Err(ActorRefError::ActorUnavailable)
                 }
             },
-            Err(_e) => {
-                error!(target: "ActorRef", "error sending message");
+            Err(e) => {
+                error!(target: "ActorRef", "error sending message, {}", e);
                 Err(ActorRefError::ActorUnavailable)
             }
         }
