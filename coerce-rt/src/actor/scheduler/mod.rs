@@ -167,12 +167,18 @@ where
     A: 'static + Send + Sync,
 {
     let (actor_ref, rx) = gen_actor_ref();
-    tokio::spawn(actor_loop(actor_ref.id.clone(), actor_context, actor, rx, on_start));
+    tokio::spawn(actor_loop(
+        actor_ref.id.clone(),
+        actor_context,
+        actor,
+        rx,
+        on_start,
+    ));
     actor_ref
 }
 
 fn gen_actor_ref<A: Actor>() -> (ActorRef<A>, tokio::sync::mpsc::Receiver<MessageHandler<A>>)
-    where
+where
     A: 'static + Send + Sync,
 {
     let id = ActorId::new_v4();

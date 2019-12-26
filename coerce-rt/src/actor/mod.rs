@@ -53,6 +53,19 @@ where
     pub id: ActorId,
     sender: tokio::sync::mpsc::Sender<MessageHandler<A>>,
 }
+impl<A: Actor> std::fmt::Debug for ActorRef<A>
+where
+    A: 'static + Send + Sync,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "type actor {}, id {}",
+            std::any::type_name::<A>(),
+            &self.id
+        )
+    }
+}
 
 impl<A: Actor> From<BoxedActorRef> for ActorRef<A>
 where

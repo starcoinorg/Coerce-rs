@@ -1,5 +1,5 @@
 use crate::actor::context::ActorStatus::{Started, Starting, Stopped, Stopping};
-use crate::actor::context::{ActorHandlerContext, ActorStatus, ActorContext};
+use crate::actor::context::{ActorContext, ActorHandlerContext, ActorStatus};
 use crate::actor::message::{Handler, Message, MessageHandler};
 use crate::actor::{Actor, ActorId};
 
@@ -47,7 +47,7 @@ pub async fn actor_loop<A: Actor>(
     A: 'static + Send + Sync,
 {
     trace!(target: "ActorLoop", "[{}] starting", &id);
-    let mut ctx = ActorHandlerContext::new(id.clone(),context,  Starting);
+    let mut ctx = ActorHandlerContext::new(id.clone(), context, Starting);
 
     actor.started(&mut ctx).await;
 
