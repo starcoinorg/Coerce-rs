@@ -36,8 +36,10 @@ pub async fn test_actor_lifecycle_stopping() {
     let status = actor_ref.status().await;
     let stopping = actor_ref.stop().await;
     let msg_send = actor_ref.status().await;
+    let stopping_again = actor_ref.stop().await;
 
     assert_eq!(status, Ok(ActorStatus::Started));
     assert_eq!(stopping, Ok(ActorStatus::Stopping));
     assert_eq!(msg_send, Err(ActorRefError::ActorUnavailable));
+    assert_eq!(stopping_again, Err(ActorRefError::ActorUnavailable));
 }

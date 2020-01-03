@@ -31,6 +31,12 @@ where
     A: 'static + Sync + Send,
 {
     async fn handle(&mut self, _message: Stop, ctx: &mut ActorHandlerContext) -> ActorStatus {
+        let self_id = ctx
+            .actor_id().clone();
+
+        if ctx.actor_context_mut().remove_actor::<Self>(self_id).await.is_none() {
+            trace!(target: "ActorStop", "[{}] already stopped", ctx.actor_id());
+        }
         ctx.set_status(Stopping);
 
         Stopping

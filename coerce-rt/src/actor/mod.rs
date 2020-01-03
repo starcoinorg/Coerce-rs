@@ -184,8 +184,6 @@ where
     }
 
     pub async fn stop(&mut self) -> Result<ActorStatus, ActorRefError> {
-        let r = self.send(Stop {}).await;
-        remove_actor::<A>(self.id.clone()).await;
-        r
+        self.send(Stop {}).await
     }
 }
