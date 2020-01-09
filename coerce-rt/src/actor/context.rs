@@ -60,6 +60,10 @@ impl ActorContext {
             Err(_) => None,
         }
     }
+
+    pub async fn terminate(&self) {
+        self.scheduler.clone().stop().await;
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
