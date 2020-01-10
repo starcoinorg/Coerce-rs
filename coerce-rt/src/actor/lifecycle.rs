@@ -46,7 +46,7 @@ pub async fn actor_loop<A: Actor>(
 ) where
     A: 'static + Send + Sync,
 {
-    trace!(target: "ActorLoop", "[{}] starting", &id);
+    trace!(target: "ActorLoop", "{}[{}] starting", std::any::type_name::<A>(), &id);
     let mut ctx = ActorHandlerContext::new(id.clone(), context, Starting);
 
     actor.started(&mut ctx).await;
@@ -62,10 +62,10 @@ pub async fn actor_loop<A: Actor>(
         let _ = on_start.send(true);
     }
 
-    trace!(target: "ActorLoop", "[{}] ready", &id);
+    trace!(target: "ActorLoop", "{}[{}] ready",std::any::type_name::<A>(), &id);
 
     while let Some(mut msg) = rx.recv().await {
-        trace!(target: "ActorLoop", "[{}] recv", &id);
+        trace!(target: "ActorLoop", "{}[{}] recv",std::any::type_name::<A>(), &id);
 
         msg.handle(&mut actor, &mut ctx).await;
 
@@ -75,7 +75,7 @@ pub async fn actor_loop<A: Actor>(
         }
     }
 
-    trace!(target: "ActorLoop", "[{}] stopping", &id);
+    trace!(target: "ActorLoop", "{}[{}] stopping",std::any::type_name::<A>(), &id);
 
     ctx.set_status(Stopping);
 
@@ -87,7 +87,7 @@ pub async fn actor_loop<A: Actor>(
         .await
         .is_none()
     {
-        trace!(target: "ActorLoop", "[{}] already stopped", ctx.actor_id());
+        trace!(target: "ActorLoop", "{}[{}] already stopped", std::any::type_name::<A>(), ctx.actor_id());
     }
     ctx.set_status(Stopped);
 }

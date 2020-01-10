@@ -135,17 +135,17 @@ where
             .await
         {
             Ok(_) => {
-                trace!(target: "ActorRef", "send msg ok");
+                trace!(target: "ActorRef", "{:?} send msg ok", &self);
                 match rx.await {
                     Ok(res) => Ok(res),
                     Err(e) => {
-                        error!(target: "ActorRef", "error receiving result, {}", e);
+                        error!(target: "ActorRef", "{:?} error receiving result, {}", &self, e);
                         Err(ActorRefError::ActorUnavailable)
                     }
                 }
             }
             Err(e) => {
-                error!(target: "ActorRef", "error sending message, {}", e);
+                error!(target: "ActorRef", "{:?} error sending message, {}", &self, e);
                 Err(ActorRefError::ActorUnavailable)
             }
         }
