@@ -77,6 +77,9 @@ pub async fn actor_loop<A: Actor>(
 
     trace!(target: "ActorLoop", "{}[{}] stopping",std::any::type_name::<A>(), &id);
 
+    // drop rx early to prevent cyclic call
+    drop(rx);
+
     ctx.set_status(Stopping);
 
     actor.stopped(&mut ctx).await;
