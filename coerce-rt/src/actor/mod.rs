@@ -134,13 +134,16 @@ where
             .send(Box::new(ActorMessage::new(msg, Some(tx))))
             .await
         {
-            Ok(_) => match rx.await {
-                Ok(res) => Ok(res),
-                Err(e) => {
-                    error!(target: "ActorRef", "error receiving result, {}", e);
-                    Err(ActorRefError::ActorUnavailable)
+            Ok(_) => {
+                trace!(target: "ActorRef", "send msg ok");
+                match rx.await {
+                    Ok(res) => Ok(res),
+                    Err(e) => {
+                        error!(target: "ActorRef", "error receiving result, {}", e);
+                        Err(ActorRefError::ActorUnavailable)
+                    }
                 }
-            },
+            }
             Err(e) => {
                 error!(target: "ActorRef", "error sending message, {}", e);
                 Err(ActorRefError::ActorUnavailable)
