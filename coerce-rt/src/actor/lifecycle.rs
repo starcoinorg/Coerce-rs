@@ -91,10 +91,9 @@ pub async fn actor_loop<A: Actor>(
 
     if actor_type.is_tracked() {
         if let Some(mut scheduler) = scheduler {
-            scheduler
-                .send(DeregisterActor(id))
-                .await
-                .expect("de-register actor");
+            if let Err(e) = scheduler.send(DeregisterActor(id)).await {
+                trace!(target: "ActorLoop", "[{}] already deregistered", ctx.id());
+            }
         }
     }
 }
